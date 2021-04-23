@@ -1,16 +1,18 @@
-# This is a sample Python script.
+#import cv2
+#import mido
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+def get_boxes(img):
+    '''Counts the number of points in the image and returns a list of the fitting box parameters associated with each
+    box: (length,height,x_center,y_center)
+    '''
 
+def midi_convert(box_params):
+    '''Converts each list of box parameters into MIDI format (note, duration, loudness)
+    '''
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    #img=cv2.imread("shell_sheet_music_thresh.png")
+    #box_params=getboxes(img)
+    #midi_sequence=midi_convert(box_params)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    print("Hello World")
