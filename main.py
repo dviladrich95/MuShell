@@ -11,7 +11,7 @@ def midi_convert(box_params):
     '''
 
 if __name__ == '__main__':
-    #img=cv2.imread("shell_sheet_music_thresh.png")
+    #img=cv2.imread("shell_thresh.png")
     #box_params=getboxes(img)
     #midi_sequence=midi_convert(box_params)
 
