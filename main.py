@@ -40,28 +40,29 @@ def get_boxes(shell_thresh):
     '''Counts the number of points in the image and returns a list of the fitting box parameters associated with each
     box: (length,height,x_center,y_center)
     '''
-
-    imgRGB = cv.cvtColor(shell_thresh.copy(), cv.COLOR_GRAY2RGB)
     ctrs, _ = cv.findContours(shell_thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
     boxes = []
     for ctr in ctrs:
         x, y, w, h = cv.boundingRect(ctr)
         boxes.append([x, y, w, h])
+    return boxes
 
+def show_boxes(shell_thresh, boxes):
+    shell_thresh_rgb = cv.cvtColor(shell_thresh.copy(), cv.COLOR_GRAY2RGB)
     for box in boxes:
         top_left = (box[0], box[1])
         bottom_right = (box[0] + box[2], box[1] + box[3])
-        cv.rectangle(imgRGB, top_left, bottom_right, (0, 255, 0), 2)
+        cv.rectangle(shell_thresh_rgb, top_left, bottom_right, (0, 255, 0), 2)
 
-    cv.imshow("Connected Components", imgRGB)
+    cv.imshow("Connected Components", shell_thresh_rgb)
     cv.waitKey(0)
-    cv.imwrite("shell_boxes.png", imgRGB)
-    return boxes
+    return shell_thresh_rgb
 
 def boxes2midi(box_params):
     '''Converts each list of box parameters into MIDI format (note, duration, loudness)
     '''
+
 
 def midi2audio(box_params):
     '''Converts each list of box parameters into MIDI format (note, duration, loudness)
@@ -72,7 +73,7 @@ if __name__ == '__main__':
     #shell=cv.imread("shell.png")
     #shell_thresh=threshold_test(shell)
 
-    shell_thresh_rgb = cv.imread("shell_thresh.png",0)
+    shell_thresh_rgb = cv.imread("shell_thresh.png", 0)
     shell_thresh = cv.threshold(shell_thresh_rgb, 127, 255, cv.THRESH_BINARY)[1]
 
     #label_count, label_image = count_objects(shell_thresh)
@@ -81,8 +82,6 @@ if __name__ == '__main__':
     # cv.waitKey(0)
 
     boxes = get_boxes(shell_thresh)
-
-
 
     #box_params=getboxes(img)
     #midi_sequence=midi_convert(box_params)
