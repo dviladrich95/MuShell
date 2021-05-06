@@ -26,6 +26,8 @@ def threshold_test(shell):
 def count_objects(shell_thresh):
     """
     Counts the number of objects in the binary image
+    :param shell_thresh:
+    :return:
     """
     label_image = shell_thresh.copy()
     label_count = 0
