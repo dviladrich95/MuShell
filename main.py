@@ -5,10 +5,13 @@ import numpy as np
 
 
 def threshold_test(shell):
-    '''Thresholds image into binary image
-    '''
+    """
+    :param shell:
+    :return:
+
+    """
     shell_gray = cv.cvtColor(shell, cv.COLOR_BGR2GRAY)
-    shell_lap = cv.Laplacian(shell_gray,cv.CV_64F,ksize=5)
+    shell_lap = cv.Laplacian(shell_gray, cv.CV_64F, ksize=5)
     abs_sobel64f = np.absolute(shell_lap)
     sobel_8u = np.uint8(abs_sobel64f)
     blurred = cv.blur(sobel_8u, (3, 3))
@@ -21,8 +24,9 @@ def threshold_test(shell):
 
 
 def count_objects(shell_thresh):
-    '''Counts the number of objects in the binary image
-    '''
+    """
+    Counts the number of objects in the binary image
+    """
     label_image = shell_thresh.copy()
     label_count = 0
     print(label_image.shape)
@@ -36,10 +40,14 @@ def count_objects(shell_thresh):
 
     return label_count, label_image
 
+
 def get_boxes(shell_thresh):
-    '''Counts the number of points in the image and returns a list of the fitting box parameters associated with each
+    """
+    Counts the number of points in the image and returns a list of the fitting box parameters associated with each
     box: (length,height,x_center,y_center)
-    '''
+    :param shell_thresh:
+    :return:
+    """
     ctrs, _ = cv.findContours(shell_thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
     boxes = []
@@ -48,7 +56,14 @@ def get_boxes(shell_thresh):
         boxes.append([x, y, w, h])
     return boxes
 
+
 def show_boxes(shell_thresh, boxes):
+    """
+
+    :param shell_thresh:
+    :param boxes:
+    :return:
+    """
     shell_thresh_rgb = cv.cvtColor(shell_thresh.copy(), cv.COLOR_GRAY2RGB)
     for box in boxes:
         top_left = (box[0], box[1])
@@ -59,29 +74,35 @@ def show_boxes(shell_thresh, boxes):
     cv.waitKey(0)
     return shell_thresh_rgb
 
+
 def boxes2midi(box_params):
-    '''Converts each list of box parameters into MIDI format (note, duration, loudness)
-    '''
+    """
+    Converts each list of box parameters into MIDI format (note, duration, loudness)
+    """
 
 
 def midi2audio(box_params):
-    '''Converts each list of box parameters into MIDI format (note, duration, loudness)
-    '''
+    """
+    Converts each list of box parameters into MIDI format (note, duration, loudness)
+    """
 
 
 if __name__ == '__main__':
-    #shell=cv.imread("shell.png")
-    #shell_thresh=threshold_test(shell)
+    # shell=cv.imread("shell.png")
+    # shell_thresh=threshold_test(shell)
 
     shell_thresh_rgb = cv.imread("shell_thresh.png", 0)
     shell_thresh = cv.threshold(shell_thresh_rgb, 127, 255, cv.THRESH_BINARY)[1]
 
-    #label_count, label_image = count_objects(shell_thresh)
+    # print(np.alltrue(shell_thresh==shell_thresh_rgb))
+    # label_count, label_image = count_objects(shell_thresh)
     # print("Number of foreground objects", label_count)
     # cv.imshow("Connected Components", label_image)
     # cv.waitKey(0)
 
     boxes = get_boxes(shell_thresh)
 
-    #box_params=getboxes(img)
-    #midi_sequence=midi_convert(box_params)
+    _ = show_boxes(shell_thresh,boxes)
+
+    # box_params=get_boxes(img)
+    # midi_sequence=midi_convert(box_params)
