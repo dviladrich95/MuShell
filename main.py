@@ -1,5 +1,5 @@
 import cv2 as cv
-import mido
+#import mido
 from matplotlib import pyplot as plt
 import numpy as np
 
@@ -50,7 +50,6 @@ def get_boxes(shell_thresh):
     :param shell_thresh:
     :return:
     """
-    ctrs, _ = cv.findContours(shell_thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
     boxes = []
     for ctr in ctrs:
@@ -58,6 +57,25 @@ def get_boxes(shell_thresh):
         boxes.append([x, y, w, h])
     return boxes
 
+def contour2fourier(contours,n=10):
+    """
+    Convert contour pixel list into fourier descriptor
+    """
+    descriptor_list=[]
+    for contour in contours:
+        complex_ctr = contour[:,0,0] + 1j * contour[:,0,1]
+        descriptor_complex=np.fft.fft(complex_ctr,axis=0,n=n)
+        descriptor_abs= np.abs(descriptor_complex)
+        descriptor_list.append(descriptor_abs)
+
+        n_list=range(1,n)
+        plt.plot(n_list,descriptor_abs[1:])
+        plt.show()
+
+
+
+
+    return descriptor_list
 
 def show_boxes(shell_thresh, boxes):
     """
@@ -76,7 +94,6 @@ def show_boxes(shell_thresh, boxes):
     cv.waitKey(0)
     return shell_thresh_rgb
 
-
 def boxes2midi(box_params):
     """
     Converts each list of box parameters into MIDI format (note, duration, loudness)
@@ -93,7 +110,7 @@ if __name__ == '__main__':
     # shell=cv.imread("shell.png")
     # shell_thresh=threshold_test(shell)
 
-    shell_thresh_rgb = cv.imread("shell_thresh.png", 0)
+    shell_thresh_rgb = cv.imread("Images/ellipse.jpg", 0)
     shell_thresh = cv.threshold(shell_thresh_rgb, 127, 255, cv.THRESH_BINARY)[1]
 
     # print(np.alltrue(shell_thresh==shell_thresh_rgb))
@@ -102,7 +119,10 @@ if __name__ == '__main__':
     # cv.imshow("Connected Components", label_image)
     # cv.waitKey(0)
 
-    boxes = get_boxes(shell_thresh)
+    ctrs, _ = cv.findContours(shell_thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+    descriptor_list = contour2fourier(ctrs)
+    boxes = get_boxes(ctrs)
 
     _ = show_boxes(shell_thresh,boxes)
 
