@@ -78,16 +78,23 @@ def get_boxes(contours):
     boxes = np.asarray(boxes)
     return boxes
 
-def quantize_time(box_list,img_height,time_divisions=120):
-    quant_param= img_height/time_divisions
-    qtime_list = box_list[:,:,0]//quant_param
+def quantize_time(box_list,img_height,time_divisions=120): #30 seconds at 120 bpm
+    """
 
+    :param box_list:
+    :param img_height:
+    :param time_divisions:
+    :return:
+    """
+    quant_param= img_height/time_divisions
+    qtime_list = box_list[:,1]//quant_param
+    qtime_list_multiplied = qtime_list*int(quant_param)
     return qtime_list
 
 
-def quantize_pitch(box_list,img_width,note_num=18):
+def quantize_pitch(box_list,img_width,note_num=18): #18 because its roughly the number of
     quant_param= img_width/note_num
-    qpitch_list = box_list[:,:,1]//quant_param
+    qpitch_list = box_list[:,0]//quant_param
 
     return qpitch_list
 
@@ -164,7 +171,7 @@ if __name__ == '__main__':
 
     # label_count, label_image = count_objects(img_thresh)
 
-    label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
+    #label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
 
     # box_params=get_boxes(img)
     # midi_sequence=midi_convert(box_params)
