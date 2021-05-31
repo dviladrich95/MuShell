@@ -158,12 +158,14 @@ def show_boxes(img_thresh, box_list):
     return img_thresh_rgb
 
 
-def boxes2frequency(box_params):
-    """
-    Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
-    """
+
 
 def get_cents(cent_list):
+    """
+    Gets the scale file and extracts a list of note coordinates in cents
+    """
+
+def cents2qstrip(init_note, box_list):
     """
     Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
     """
