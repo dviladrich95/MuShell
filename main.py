@@ -4,7 +4,9 @@ from matplotlib import pyplot as plt
 from scipy.interpolate import interp1d
 import numpy as np
 from scipy.fft import fft
-
+import math
+import os
+from midiutil import MIDIFile
 
 def threshold_test(img):
     """
@@ -85,7 +87,7 @@ def get_boxes(contours):
     return box_list
 
 
-def quantize_time(box_list, img_height, time_divisions=120):  # 30 seconds at 120 bpm
+def quantize_time(box_list, img_height, beat_num=120):  # 30 seconds at 120 bpm
     """
     Quantizes the time coordinate (y coordinate) of the picture
     :param box_list:
@@ -93,24 +95,45 @@ def quantize_time(box_list, img_height, time_divisions=120):  # 30 seconds at 12
     :param time_divisions:
     :return:
     """
-    quant_param = img_height / time_divisions
-    qtime_list_boxnum = box_list[:, 1] / quant_param
-    qtime_list = qtime_list_boxnum * int(quant_param)
+    quant_param = img_height / beat_num
+    qtime_list = box_list[:, 1] / quant_param
+    #qtime_list = qtime_list_boxnum * int(quant_param)
     return qtime_list
 
+def make_exp_scale_list(scale, note_num):
+    """
 
-def quantize_pitch(box_list, img_width, note_num=18):  # 18 because its roughly the number of
+    :param scale: scale to use in cents
+    :param note_num: number of notes to use, the scale repeates until all notes in the range are used
+    :return: list of notes using the given scale
+    """
+    scale_range = scale[-1] # range of the scale, will always be 1200 for scales that span a whole octave
+    exp_scale_list=[0.0] # initial note was not part of the scale, is added now
+    for i in range(note_num-1):
+        exp_scale_list.append(scale[i%len(scale)]+i//(len(scale))*scale_range)
+    return exp_scale_list
+
+def quantize_pitch(box_list, img_width, exp_scale_list, note_num):  # 18 because its roughly the number of
     """
     Quantizes the pitch coordinate (x coordinate) of the picture
     :param box_list:
     :param img_width:
+    :param scale: scale to be used for quantization
     :param note_num:
     :return:
     """
-    quant_param = img_width / note_num
-    qpitch_list_boxnum = box_list[:, 0] // quant_param
-    qpitch_list = qpitch_list_boxnum * int(quant_param)
-    return qpitch_list
+
+
+    norm_param = img_width / exp_scale_list[-1] # quantization parameter
+    pitch_list = box_list[:, 0]
+    pitch_list_normed = np.asarray(pitch_list) * norm_param
+    pitch_list_normed_flat = np.repeat(pitch_list_normed, note_num)
+    exp_scale_list_flat = np.tile(exp_scale_list, len(pitch_list))
+    pitch_list_normed_tile = np.reshape(pitch_list_normed_flat, (len(pitch_list), note_num))
+    exp_scale_list_tile = np.reshape(exp_scale_list_flat, (len(pitch_list), note_num))
+
+    note_ind_list = np.argmin(np.abs(pitch_list_normed_tile - exp_scale_list_tile), axis=1)
+    return note_ind_list
 
 
 def contour2fourier(contours, n=100000,interpoints=100):
@@ -158,33 +181,77 @@ def show_boxes(img_thresh, box_list):
     return img_thresh_rgb
 
 
+def get_scale_paths():
+    cwd = os.getcwd()
 
+    scale_directory = os.path.join(cwd, "scales")
+    scales_name_list = os.listdir(scale_directory)
+    return scales_name_list
 
-def get_cents(cent_list):
+def get_scale_cents_and_root(scale_name):
     """
     Gets the scale file and extracts a list of note coordinates in cents
+    :param scale_name: name of the scale file to be used
+    :return: root node of the sclae and scale note list
     """
+    cwd = os.getcwd()
+    scale_directory = os.path.join(cwd, "scales")
+    with open(os.path.join(scale_directory,scale_name), "r") as scale_file:
+        scale_str = scale_file.read().replace('\n', ' ')
 
-def cents2qstrip(init_note, box_list):
+        scale_str_list = scale_str.split('!')
+        scale_list_dirty = scale_str_list[-1].split(' ')
+
+        scale_root = float(scale_str_list[2].split(' ')[-2][:-2]) #take only the Hz value at the end and remove the Hz symbol
+        scale_list = [float(x) for x in scale_list_dirty if x]
+    return scale_root, scale_list
+
+def cents2frequency(cent_list,root_note):
+    """
+    Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
+    """
+    freq_list=[]
+    for note in cent_list:
+        freq_list.append(root_note*math.pow(2, note/1200.0))
+    return freq_list
+
+def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
     """
     Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
     """
 
-def cents2frequency(cent_list):
-    """
-    Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
-    """
+    output_file = os.path.join(os.getcwd(), midi_str)
+    time_list = box_list[:, 1]
+    freq_list = cents2frequency(exp_scale_list, root_note)
 
-def make_freq_mapping(frequency_list):
-    """
-    Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
-    """
+    frequency_mapping = [(i, note) for i, note in enumerate(freq_list)]
 
+    tempo = 120  # In BPM
+    track = 0
+    channel = 0
 
-def midi2audio(box_params):
-    """
-    Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
-    """
+    midi_file = MIDIFile(1, adjust_origin=False)
+    midi_file.addTempo(0, 0, tempo)
+    # Change the tuning
+    midi_file.changeNoteTuning(0, frequency_mapping, tuningProgam=0)
+
+    # Tell fluidsynth what bank and program to use (0 and 0, respectively)
+    midi_file.changeTuningBank(0, 0, 0, 0)
+    midi_file.changeTuningProgram(0, 0, 0, 0)
+
+    # Add some ones
+
+    duration = 1  # In beats
+
+    volume = 100  # 0-127, as per the MIDI standard
+
+    for note_ind, time in qbox_list:
+        midi_file.addNote(track, channel, note_ind, time, duration, volume) # time and duration measured in beats
+
+    # Write to disk
+    with open(output_file, "wb") as out_file:
+        midi_file.writeFile(out_file)
+
 
 
 if __name__ == '__main__':
@@ -203,11 +270,20 @@ if __name__ == '__main__':
     contours, _ = cv.findContours(img_thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
     box_list = get_boxes(contours)
-    descriptor_list = contour2fourier(contours)
+    #descriptor_list = contour2fourier(contours)
+
+    root_note, scale = get_scale_cents_and_root('12_ed_2_equal_temperament.scl')
+    note_num=18
+    exp_scale_list = make_exp_scale_list(scale, note_num)
 
     qtime_list = quantize_time(box_list, img_height)
-    qpitch_list = quantize_pitch(box_list, img_width)
-    qbox_list = zip(qpitch_list, qtime_list)
+    note_ind_list = quantize_pitch(box_list, img_width, exp_scale_list, note_num)
+
+
+
+    qbox_list = zip(note_ind_list, qtime_list)
+
+    qbox_list2midi(qbox_list,root_note,exp_scale_list)
 
     _ = show_boxes(img_thresh, box_list)
 
