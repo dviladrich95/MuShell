@@ -10,7 +10,7 @@ from midiutil import MIDIFile
 
 def threshold_test(img):
     """
-    Test function that converts RGB image tho thresholded counterpart, not really used right now
+    Test function that converts RGB image to thresholded counterpart, not really used right now
     :param img: image to be thresholded
     :return:
     """
@@ -220,7 +220,7 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
     Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
     """
 
-    output_file = os.path.join(os.getcwd(), midi_str)
+    output_file = os.path.join(os.getcwd(), 'midi_files', midi_str)
     time_list = box_list[:, 1]
     freq_list = cents2frequency(exp_scale_list, root_note)
 
@@ -229,6 +229,8 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
     tempo = 120  # In BPM
     track = 0
     channel = 0
+    duration = 1  # In beats
+    volume = 100  # 0-127, as per the MIDI standard
 
     midi_file = MIDIFile(1, adjust_origin=False)
     midi_file.addTempo(0, 0, tempo)
@@ -239,16 +241,12 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
     midi_file.changeTuningBank(0, 0, 0, 0)
     midi_file.changeTuningProgram(0, 0, 0, 0)
 
-    # Add some ones
-
-    duration = 1  # In beats
-
-    volume = 100  # 0-127, as per the MIDI standard
-
+    # Add some notes
     for note_ind, time in qbox_list:
         midi_file.addNote(track, channel, note_ind, time, duration, volume) # time and duration measured in beats
 
     # Write to disk
+
     with open(output_file, "wb") as out_file:
         midi_file.writeFile(out_file)
 
@@ -285,7 +283,7 @@ if __name__ == '__main__':
 
     qbox_list2midi(qbox_list,root_note,exp_scale_list)
 
-    _ = show_boxes(img_thresh, box_list)
+    #_ = show_boxes(img_thresh, box_list)
 
     # label_count, label_image = count_objects(img_thresh)
 
