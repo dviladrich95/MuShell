@@ -1,5 +1,4 @@
 import cv2 as cv
-# import mido
 from matplotlib import pyplot as plt
 from scipy.interpolate import interp1d
 import numpy as np
@@ -208,20 +207,22 @@ def get_scale_cents_and_root(scale_name):
 
 def cents2frequency(cent_list,root_note):
     """
-    Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
+    Converts each list of notes in cents into frequency given root node
+    :param cent_list: list of notes in cents
+    :param root_note: root node that will indicate the frequency of the first note with 0 cents
+    :return: list of notes in frequency (Hz)
     """
-    freq_list=[]
+    freq_list = []
     for note in cent_list:
         freq_list.append(root_note*math.pow(2, note/1200.0))
     return freq_list
 
 def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
     """
-    Converts each list of box parameters into MIDI format (note, duration, loudness) using the mido or pyaudio module
+    Converts each list of box parameters into MIDI format (note, duration, loudness) using the MIDIutil module
     """
 
     output_file = os.path.join(os.getcwd(), 'midi_files', midi_str)
-    time_list = box_list[:, 1]
     freq_list = cents2frequency(exp_scale_list, root_note)
 
     frequency_mapping = [(i, note) for i, note in enumerate(freq_list)]
@@ -234,6 +235,7 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
 
     midi_file = MIDIFile(1, adjust_origin=False)
     midi_file.addTempo(0, 0, tempo)
+
     # Change the tuning
     midi_file.changeNoteTuning(0, frequency_mapping, tuningProgam=0)
 
@@ -246,7 +248,6 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
         midi_file.addNote(track, channel, note_ind, time, duration, volume) # time and duration measured in beats
 
     # Write to disk
-
     with open(output_file, "wb") as out_file:
         midi_file.writeFile(out_file)
 
@@ -286,7 +287,6 @@ if __name__ == '__main__':
     #_ = show_boxes(img_thresh, box_list)
 
     # label_count, label_image = count_objects(img_thresh)
-
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
 
     # box_params=get_boxes(img)
