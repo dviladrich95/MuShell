@@ -242,7 +242,6 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
     # Tell fluidsynth what bank and program to use (0 and 0, respectively)
     midi_file.changeTuningBank(0, 0, 0, 0)
     midi_file.changeTuningProgram(0, 0, 0, 0)
-
     # Add some notes
     for note_ind, time in qbox_list:
         midi_file.addNote(track, channel, note_ind, time, duration, volume) # time and duration measured in beats
@@ -257,7 +256,7 @@ if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
 
-    img_thresh_rgb = cv.imread("Images/shell_thresh.png", 0)
+    img_thresh_rgb = cv.imread("Images/oriental-techno-texture-thresh.JPG", 0)
     img_thresh = cv.threshold(img_thresh_rgb, 127, 255, cv.THRESH_BINARY)[1]
     img_height, img_width = img_thresh.shape
     # print(np.alltrue(img_thresh==img_thresh_rgb))
@@ -271,8 +270,8 @@ if __name__ == '__main__':
     box_list = get_boxes(contours)
     #descriptor_list = contour2fourier(contours)
 
-    root_note, scale = get_scale_cents_and_root('12_ed_2_equal_temperament.scl')
-    note_num=18
+    root_note, scale = get_scale_cents_and_root('asmaroneng_pelog.scl')
+    note_num=8
     exp_scale_list = make_exp_scale_list(scale, note_num)
 
     qtime_list = quantize_time(box_list, img_height)
@@ -284,7 +283,7 @@ if __name__ == '__main__':
 
     qbox_list2midi(qbox_list,root_note,exp_scale_list)
 
-    #_ = show_boxes(img_thresh, box_list)
+    _ = show_boxes(img_thresh, box_list)
 
     # label_count, label_image = count_objects(img_thresh)
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
