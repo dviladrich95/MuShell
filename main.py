@@ -86,25 +86,7 @@ def get_boxes(contours):
     return box_list
 
 
-def quantize_time(box_list, img_height, beat_num=120):  # 30 seconds at 120 bpm
-    """
-    Quantizes the time coordinate (y coordinate) of the picture
-    :param box_list:
-    :param img_height:
-    :param time_divisions:
-    :return:
-    """
-    quant_param = img_height / beat_num
-    qtime_list = box_list[:, 1] / quant_param
-    #qtime_list = qtime_list_boxnum * int(quant_param)
 
-    #TODO implement duration
-    quant_param = img_height / beat_num
-    qtime_list = box_list[:, 1] / quant_param
-    #qtime_list = qtime_list_boxnum * int(quant_param)
-
-
-    return qtime_list #, qduration_list
 
 def make_exp_scale_list(scale, note_num):
     """
@@ -119,16 +101,32 @@ def make_exp_scale_list(scale, note_num):
         exp_scale_list.append(scale[i%len(scale)]+i//(len(scale))*scale_range)
     return exp_scale_list
 
-def quantize_pitch(box_list, img_width, exp_scale_list, note_num):  # 18 because its roughly the number of
+def quantize_time(box_list, img_shape, beat_num=120):  # 30 seconds at 120 bpm
     """
-    Quantizes the pitch coordinate (x coordinate) of the picture
+    Quantizes the time coordinate (y coordinate) of the picture
     :param box_list:
-    :param img_width:
-    :param scale: scale to be used for quantization
-    :param note_num:
+    :param img_height:
+    :param time_divisions:
     :return:
     """
+    qbox_list = box_list
 
+    img_width = img_shape[0]
+    img_height = img_shape[1]
+
+    quant_param = img_height / beat_num
+    qtime_list = box_list[:, 1] / quant_param
+    #qtime_list = qtime_list_boxnum * int(quant_param)
+
+    #TODO implement duration
+    quant_param = img_height / beat_num
+    qtime_list = box_list[:, 1] / quant_param
+    #qtime_list = qtime_list_boxnum * int(quant_param)
+
+    qbox_list[0] = qtime_list
+    # qbox_list[2] =
+
+#box_list, img_width, exp_scale_list, note_num
 
     norm_param = img_width / exp_scale_list[-1] # quantization parameter
     pitch_list = box_list[:, 0]
@@ -137,9 +135,12 @@ def quantize_pitch(box_list, img_width, exp_scale_list, note_num):  # 18 because
     exp_scale_list_flat = np.tile(exp_scale_list, len(pitch_list))
     pitch_list_normed_tile = np.reshape(pitch_list_normed_flat, (len(pitch_list), note_num))
     exp_scale_list_tile = np.reshape(exp_scale_list_flat, (len(pitch_list), note_num))
-
     note_ind_list = np.argmin(np.abs(pitch_list_normed_tile - exp_scale_list_tile), axis=1)
-    return note_ind_list
+
+    qbox_list[1] = note_ind_list
+
+
+    return qbox_list
 
 
 def contour2fourier(contours, n=100000,interpoints=100):
@@ -224,7 +225,7 @@ def cents2frequency(cent_list,root_note):
         freq_list.append(root_note*math.pow(2, note/1200.0))
     return freq_list
 
-def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
+def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str):
     """
     Converts each list of box parameters into MIDI format (note, duration, loudness) using the MIDIutil module
     """
@@ -262,8 +263,8 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str='midi_test.mid'):
 if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
-
-    img_thresh_rgb = cv.imread("Images/oriental-techno-texture-thresh.JPG", 0)
+    file_name = "nussatella_thresh"
+    img_thresh_rgb = cv.imread(os.path.join('Images',file_name+'.png'), 0)
     img_thresh = cv.threshold(img_thresh_rgb, 127, 255, cv.THRESH_BINARY)[1]
     img_height, img_width = img_thresh.shape
     # print(np.alltrue(img_thresh==img_thresh_rgb))
@@ -290,7 +291,7 @@ if __name__ == '__main__':
 
     qbox_list2midi(qbox_list,root_note,exp_scale_list)
 
-    _ = show_boxes(img_thresh, box_list)
+    _ = show_boxes(img_thresh, midi_str)
 
     # label_count, label_image = count_objects(img_thresh)
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
