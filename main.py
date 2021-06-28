@@ -97,7 +97,14 @@ def quantize_time(box_list, img_height, beat_num=120):  # 30 seconds at 120 bpm
     quant_param = img_height / beat_num
     qtime_list = box_list[:, 1] / quant_param
     #qtime_list = qtime_list_boxnum * int(quant_param)
-    return qtime_list
+
+    #TODO implement duration
+    quant_param = img_height / beat_num
+    qtime_list = box_list[:, 1] / quant_param
+    #qtime_list = qtime_list_boxnum * int(quant_param)
+
+
+    return qtime_list #, qduration_list
 
 def make_exp_scale_list(scale, note_num):
     """
