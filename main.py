@@ -101,7 +101,7 @@ def make_exp_scale_list(scale, note_num):
         exp_scale_list.append(scale[i%len(scale)]+i//(len(scale))*scale_range)
     return exp_scale_list
 
-def quantize_time(box_list, img_shape, beat_num=120):  # 30 seconds at 120 bpm
+def quantize_box(box_list, img_shape, beat_num=120):  # 30 seconds at 120 bpm
     """
     Quantizes the time coordinate (y coordinate) of the picture
     :param box_list:
