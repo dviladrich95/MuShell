@@ -87,7 +87,6 @@ def get_boxes(contours):
 
 
 
-
 def make_exp_scale_list(scale, note_num):
     """
 
@@ -121,13 +120,11 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=120):  
 
     #TODO implement duration
     quant_param = img_height / beat_num
-    qtime_list = box_list[:, 1] / quant_param
+    qduration_list = box_list[:, 3] / quant_param
     #qtime_list = qtime_list_boxnum * int(quant_param)
 
     qbox_list[:,0] = qtime_list
-    # qbox_list[2] =
-
-
+    qbox_list[:,2] = np.ceil(qduration_list)
 
     norm_param = img_width / exp_scale_list[-1] # quantization parameter
     pitch_list = box_list[:, 0]
@@ -140,9 +137,16 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=120):  
 
     qbox_list[:,1] = note_ind_list
 
+    means = []
+    for i in reversed(np.unique(qbox_list[:,0])):
+        tmp = qbox_list[np.where(qbox_list[:,0] == i)]
+        tmp[:,2] = np.mean(tmp[:, 2], dtype=int)
+        means.append(tmp)
+
+    duration_mean = np.concatenate(means, axis=0)
+    qbox_list[:, 2] = duration_mean[:, 2]
 
     return qbox_list
-
 
 def contour2fourier(contours, n=100000,interpoints=100):
     """
@@ -239,7 +243,7 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str):
     tempo = 120  # In BPM
     track = 0
     channel = 0
-    #duration = 1  # In beats
+    # duration = 1  # In beats
     volume = 100  # 0-127, as per the MIDI standard
 
     midi_file = MIDIFile(1, adjust_origin=False)
