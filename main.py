@@ -172,7 +172,7 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=120,ret
         qbox_list[:, 0] = qtime_list
         qbox_list[:, 1] = qtime_list
 
-    return qbox_list
+    return qbox_list.astype(int)
 
 def contour2fourier(contours, n=100000,interpoints=100):
     """
