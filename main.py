@@ -45,6 +45,22 @@ def count_objects(img_thresh):
 
     return label_count, label_image
 
+def show_boxes(img_thresh, box_list, color):
+    """
+    Show a plot with boxes around each dot
+    :param img_thresh:
+    :param boxes:
+    :return:
+    """
+    img_thresh_rgb = cv.cvtColor(img_thresh.copy(), cv.COLOR_GRAY2RGB)
+    for box in box_list:
+        top_left = (int(box[0]), int(box[1]))
+        bottom_right = (int(box[0] + box[2]), int(box[1] + box[3]))
+        cv.rectangle(img_thresh_rgb, top_left, bottom_right, color, -1)
+
+    cv.imshow("Connected Components", img_thresh_rgb)
+    cv.waitKey(0)
+    return img_thresh_rgb
 
 def quantize_image(img_thresh, box_list, qbox_list):
     """
@@ -73,7 +89,7 @@ def quantize_image(img_thresh, box_list, qbox_list):
 def get_boxes(contours):
     """
     Counts the number of points in the image and returns a list of the fitting box parameters associated with each
-    box: (length,height,x_center,y_center)
+    box: (x_center,y_center,width,height)
     :param contours:
     :return:
     """
@@ -101,7 +117,7 @@ def make_exp_scale_list(scale, note_num):
     return exp_scale_list
 
 
-def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=120):  # 30 seconds at 120 bpm
+def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=120,return_pixel_units=False):  # 30 seconds at 120 bpm
     """
     Quantizes the time coordinate (y coordinate) of the picture
     :param box_list:
@@ -109,13 +125,27 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=120):  
     :param time_divisions:
     :return:
     """
-    qbox_list = box_list
+    qbox_list = np.zeros(box_list.shape)
 
     img_width = img_shape[0]
     img_height = img_shape[1]
 
+    #quantize the x (pitch) coordinate by converting it to the note index of the nearest scale note
+    pitch_norm_param = img_width / exp_scale_list[-1] # quantization parameter
+    pitch_list = box_list[:, 0]
+    pitch_list_normed = np.asarray(pitch_list) / pitch_norm_param
+    pitch_list_normed_flat = np.repeat(pitch_list_normed, note_num)
+    exp_scale_list_flat = np.tile(exp_scale_list, len(pitch_list))
+    pitch_list_normed_tile = np.reshape(pitch_list_normed_flat, (len(pitch_list), note_num))
+    exp_scale_list_tile = np.reshape(exp_scale_list_flat, (len(pitch_list), note_num))
+    note_ind_list = np.argmin(np.abs(pitch_list_normed_tile - exp_scale_list_tile), axis=1)
+
+    qbox_list[:,0] = note_ind_list
+    note_list = [exp_scale_list[i] for i in note_ind_list]
+
+    # quantize the
     quant_param = img_height / beat_num
-    qtime_list = box_list[:, 1] / quant_param
+    qtime_list = (box_list[:, 1] / quant_param).astype(int)
     #qtime_list = qtime_list_boxnum * int(quant_param)
 
     #TODO implement duration
@@ -123,21 +153,13 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=120):  
     qduration_list = box_list[:, 3] / quant_param
     #qtime_list = qtime_list_boxnum * int(quant_param)
 
-    qbox_list[:,0] = qtime_list
+    qbox_list[:,1] = qtime_list
     qbox_list[:,2] = np.ceil(qduration_list)
 
-    norm_param = img_width / exp_scale_list[-1] # quantization parameter
-    pitch_list = box_list[:, 0]
-    pitch_list_normed = np.asarray(pitch_list) * norm_param
-    pitch_list_normed_flat = np.repeat(pitch_list_normed, note_num)
-    exp_scale_list_flat = np.tile(exp_scale_list, len(pitch_list))
-    pitch_list_normed_tile = np.reshape(pitch_list_normed_flat, (len(pitch_list), note_num))
-    exp_scale_list_tile = np.reshape(exp_scale_list_flat, (len(pitch_list), note_num))
-    note_ind_list = np.argmin(np.abs(pitch_list_normed_tile - exp_scale_list_tile), axis=1)
 
-    qbox_list[:,1] = note_ind_list
 
     means = []
+    qbox_unique = np.unique(qbox_list[:,0], return_counts=True)
     for i in reversed(np.unique(qbox_list[:,0])):
         tmp = qbox_list[np.where(qbox_list[:,0] == i)]
         tmp[:,2] = np.mean(tmp[:, 2], dtype=int)
@@ -145,6 +167,10 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=120):  
 
     duration_mean = np.concatenate(means, axis=0)
     qbox_list[:, 2] = duration_mean[:, 2]
+
+    if return_pixel_units:
+        qbox_list[:, 0] = qtime_list
+        qbox_list[:, 1] = qtime_list
 
     return qbox_list
 
@@ -173,24 +199,6 @@ def contour2fourier(contours, n=100000,interpoints=100):
         plt.show()
 
     return descriptor_list
-
-
-def show_boxes(img_thresh, box_list):
-    """
-    Show a plot with boxes around each dot
-    :param img_thresh:
-    :param boxes:
-    :return:
-    """
-    img_thresh_rgb = cv.cvtColor(img_thresh.copy(), cv.COLOR_GRAY2RGB)
-    for box in box_list:
-        top_left = (box[0], box[1])
-        bottom_right = (box[0] + box[2], box[1] + box[3])
-        cv.rectangle(img_thresh_rgb, top_left, bottom_right, (0, 255, 0), 2)
-
-    cv.imshow("Connected Components", img_thresh_rgb)
-    cv.waitKey(0)
-    return img_thresh_rgb
 
 
 def get_scale_paths():
@@ -268,7 +276,7 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str):
 if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
-    file_name = "nussatella_thresh"
+    file_name = "three_dots"
     midi_str= file_name+'.mid'
     img_thresh_rgb = cv.imread(os.path.join('Images',file_name+'.png'), 0)
     img_thresh = cv.threshold(img_thresh_rgb, 127, 255, cv.THRESH_BINARY)[1]
@@ -293,7 +301,11 @@ if __name__ == '__main__':
 
     qbox_list2midi(qbox_list,root_note,exp_scale_list, midi_str)
 
-    _ = show_boxes(img_thresh, box_list)
+    img_boxes = show_boxes(img_thresh, box_list, color=(0, 255, 0))
+    img_qboxes = show_boxes(img_thresh, qbox_list, color=(255, 0, 0))
+
+    cv.imshow("Quantized box differences", img_boxes+img_qboxes)
+    cv.waitKey(0)
 
     # label_count, label_image = count_objects(img_thresh)
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
