@@ -7,6 +7,8 @@ import math
 import os
 from midiutil import MIDIFile
 
+# import pandas as pd
+
 def threshold_test(img):
     """
     Test function that converts RGB image to thresholded counterpart, not really used right now
@@ -276,8 +278,9 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str):
 if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
-    file_name = "three_dots"
-    midi_str= file_name+'.mid'
+    file_name = "nussatella_tresh_1"
+    scale_file_name = '12_ed_2_equal_temperament'
+    midi_str= file_name + scale_file_name +'.mid'
     img_thresh_rgb = cv.imread(os.path.join('Images',file_name+'.png'), 0)
     img_thresh = cv.threshold(img_thresh_rgb, 127, 255, cv.THRESH_BINARY)[1]
     img_shape = img_thresh.shape
@@ -292,20 +295,20 @@ if __name__ == '__main__':
     box_list = get_boxes(contours)
     #descriptor_list = contour2fourier(contours)
 
-    root_note, scale = get_scale_cents_and_root('asmaroneng_pelog.scl')
-    note_num=8
+    root_note, scale = get_scale_cents_and_root(scale_file_name+'.scl')
+    note_num=16
     exp_scale_list = make_exp_scale_list(scale, note_num)
 
-    qbox_list = quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=120)
+    qbox_list = quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num=8)
 
 
     qbox_list2midi(qbox_list,root_note,exp_scale_list, midi_str)
 
-    img_boxes = show_boxes(img_thresh, box_list, color=(0, 255, 0))
-    img_qboxes = show_boxes(img_thresh, qbox_list, color=(255, 0, 0))
+    #img_boxes = show_boxes(img_thresh, box_list, color=(0, 255, 0))
+    #img_qboxes = show_boxes(img_thresh, qbox_list, color=(255, 0, 0))
 
-    cv.imshow("Quantized box differences", img_boxes+img_qboxes)
-    cv.waitKey(0)
+    #cv.imshow("Quantized box differences", img_boxes+img_qboxes)
+    #cv.waitKey(0)
 
     # label_count, label_image = count_objects(img_thresh)
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
