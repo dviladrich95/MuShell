@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     file_name = "nussatella_tresh_1"
     scale_file_name = '12_ed_2_equal_temperament'
-    midi_str= file_name + scale_file_name +'.mid'
+    midi_str= file_name + '_'+ scale_file_name +'.mid'
     note_num=16 # number of pitch subdivisions
     beat_num = 8 # number of time subdivisions in beats
     root_note = None # root note in Hz, substitutes the root note in the file, if None, the file's root node is chosen
