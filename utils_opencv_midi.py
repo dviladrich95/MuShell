@@ -152,7 +152,7 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
     qbox_list[:, 2] = duration_mean[:, 2]
 
     if return_pixel_units:
-        qbox_list[:, 0] = qtime_list
+        qbox_list[:, 0] = note_list
         qbox_list[:, 1] = qtime_list
 
     return qbox_list.astype(int)
