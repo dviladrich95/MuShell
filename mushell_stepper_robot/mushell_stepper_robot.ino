@@ -22,7 +22,7 @@ void setup() {
 
 void loop() {
   Step(num_steps);
-  delay(2000);
+  delay(3000);
   digitalWrite(12, HIGH);
   delay(250);
   digitalWrite(12, LOW);

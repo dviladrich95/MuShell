@@ -45,7 +45,7 @@ def count_objects(img_thresh):
 
     return label_count, label_image
 
-def show_boxes(img_thresh, box_list, color):
+def show_boxes(img_thresh, box_list, color=(0, 255, 0)):
     """
     Show a plot with boxes around each dot
     :param img_thresh:

@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
 
-    file_name = "arenatus_thresh"
+    file_name = "nussatella_thresh_p3"
     scale_file_name = 'a_minor_natural_equal_temperament'
     note_num= 18 # number of pitch subdivisions
     beat_num = 22 # number of time subdivisions in beats
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     qbox_list2midi(qbox_list,root_note,exp_scale_list, midi_str)
 
-    #img_boxes = show_boxes(img_thresh, box_list, color=(0, 255, 0))
+    #img_boxes = show_boxes(img_thresh, box_list)
     #img_qboxes = show_boxes(img_thresh, qbox_list, color=(255, 0, 0))
 
     #cv.imshow("Quantized box differences", img_boxes+img_qboxes)
