@@ -116,18 +116,21 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
     img_width = img_shape[0]
     img_height = img_shape[1]
 
+    qexp_scale_list=[round(note/100) for note in exp_scale_list]
+
     #quantize the x (pitch) coordinate by converting it to the note index of the nearest scale note
-    pitch_norm_param = img_width / exp_scale_list[-1] # quantization parameter
+    pitch_norm_param = img_width / qexp_scale_list[-1] # quantization parameter
     pitch_list = box_list[:, 0]
     pitch_list_normed = np.asarray(pitch_list) / pitch_norm_param
     pitch_list_normed_flat = np.repeat(pitch_list_normed, note_num)
-    exp_scale_list_flat = np.tile(exp_scale_list, len(pitch_list))
+    exp_scale_list_flat = np.tile(qexp_scale_list, len(pitch_list))
     pitch_list_normed_tile = np.reshape(pitch_list_normed_flat, (len(pitch_list), note_num))
     exp_scale_list_tile = np.reshape(exp_scale_list_flat, (len(pitch_list), note_num))
     note_ind_list = np.argmin(np.abs(pitch_list_normed_tile - exp_scale_list_tile), axis=1)
 
-    qbox_list[:,0] = note_ind_list
-    note_list = [exp_scale_list[i] for i in note_ind_list]
+    #qbox_list[:,0] = note_ind_list
+    note_list = [int(qexp_scale_list[i]) for i in note_ind_list]
+    qbox_list[:, 0] = note_list
 
     # quantize the
     quant_param = img_height / beat_num
@@ -155,7 +158,9 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
         qbox_list[:, 0] = note_list
         qbox_list[:, 1] = qtime_list
 
-    return qbox_list.astype(int)
+    qbox_list = qbox_list.astype(int)
+
+    return qbox_list
 
 
 def contour2fourier(contours, n=100000,interpoints=100):

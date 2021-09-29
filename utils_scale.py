@@ -72,9 +72,6 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str):
     """
 
     output_file = os.path.join(os.getcwd(), 'midi_files', midi_str)
-    freq_list = cents2frequency(exp_scale_list, root_note)
-
-    frequency_mapping = [(i, note) for i, note in enumerate(freq_list)]
 
     tempo = 120  # In BPM
     track = 0
@@ -85,15 +82,12 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str):
     midi_file = MIDIFile(1, adjust_origin=False)
     midi_file.addTempo(0, 0, tempo)
 
-    # Change the tuning
-    midi_file.changeNoteTuning(0, frequency_mapping, tuningProgam=0)
-
     # Tell fluidsynth what bank and program to use (0 and 0, respectively)
     midi_file.changeTuningBank(0, 0, 0, 0)
     midi_file.changeTuningProgram(0, 0, 0, 0)
     # Add some notes
-    for note_ind, time, duration, _ in qbox_list:
-        midi_file.addNote(track, channel, note_ind, time, duration, volume) # time and duration measured in beats
+    for note, time, duration, _ in qbox_list:
+        midi_file.addNote(track, channel, note+root_note, time, duration, volume) # time and duration measured in beats
 
     # Write to disk
     with open(output_file, "wb") as out_file:

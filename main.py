@@ -20,10 +20,11 @@ if __name__ == '__main__':
 
     file_name = "nussatella_thresh_p3"
     scale_file_name = 'a_minor_natural_equal_temperament'
-    note_num= 18 # number of pitch subdivisions
+
+    note_num= 12 # number of pitch subdivisions
     beat_num = 22 # number of time subdivisions in beats
     midi_str = file_name + '_' + scale_file_name + '_' + str(note_num) + '_' + str(beat_num) + '.mid'
-    root_note = None # root note in Hz, substitutes the root note in the file, if None, the file's root node is chosen
+    root_note = 74 #midi number corresponding to where to start. 74 starts at c5
 
     img_thresh_rgb = cv.imread(os.path.join('Images',file_name+'.png'), 0)
     img_thresh = cv.threshold(img_thresh_rgb, 127, 255, cv.THRESH_BINARY)[1]
@@ -39,14 +40,14 @@ if __name__ == '__main__':
     box_list = get_boxes(contours)
     #descriptor_list = contour2fourier(contours)
 
-    root_note, scale = get_scale_cents_and_root(scale_file_name+'.scl',root_note)
+    _, scale = get_scale_cents_and_root(scale_file_name+'.scl',None)
 
     exp_scale_list = make_exp_scale_list(scale, note_num)
 
     qbox_list = quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num)
 
 
-    qbox_list2midi(qbox_list,root_note,exp_scale_list, midi_str)
+    qbox_list2midi(qbox_list,root_note, exp_scale_list, midi_str)
 
     #img_boxes = show_boxes(img_thresh, box_list)
     #img_qboxes = show_boxes(img_thresh, qbox_list, color=(255, 0, 0))
