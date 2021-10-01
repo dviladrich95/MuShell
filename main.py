@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # img_thresh=threshold_test(img)
 
     file_name = "nussatella_thresh_p1_3noten"
-    scale_file_name = 'a_minor_natural_equal_temperament'
+    scale_file_name = 'ionic'
 
     note_num= 12 # number of pitch subdivisions
     beat_num = 40 # number of time subdivisions in beats
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     box_list = get_boxes(contours)
     #descriptor_list = contour2fourier(contours)
 
-    _, scale = get_scale_cents_and_root(scale_file_name+'.scl',None)
+    scale = get_scale_cents_and_root(scale_file_name+'.scl')
 
     exp_scale_list = make_exp_scale_list(scale, note_num)
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     #img_qboxes = qshow_boxes(img_thresh, qbox_list, color=(255, 0, 0))
 
     #cv.imshow("Quantized box differences", img_boxes+img_qboxes)
-    cv.waitKey(0)
+    #cv.waitKey(0)
 
     # label_count, label_image = count_objects(img_thresh)
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)

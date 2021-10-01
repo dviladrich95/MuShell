@@ -6,6 +6,7 @@ from scipy.fft import fft
 import math
 import os
 from midiutil import MIDIFile
+from fractions import Fraction
 # import pandas as pd
 
 
@@ -17,7 +18,7 @@ def get_scale_paths():
     return scales_name_list
 
 
-def get_scale_cents_and_root(scale_name, root_note):
+def get_scale_cents_and_root(scale_name):
     """
     Gets the scale file and extracts a list of note coordinates in cents
     :param scale_name: name of the scale file to be used
@@ -29,19 +30,17 @@ def get_scale_cents_and_root(scale_name, root_note):
         scale_str = scale_file.read().replace('\n', ' ')
 
         scale_str_list = scale_str.split('!')
+
         scale_list_dirty = scale_str_list[-1].split(' ')
-
-        if root_note == None:
-            root_note = float(scale_str_list[2].split(' ')[-2][:-2]) #take only the Hz value at the end and remove the Hz symbol
-
+        scale_list_noconv=list(filter(None, scale_list_dirty))
         scale_list=[]
-        for note in scale_list_dirty:
+        for note in scale_list_noconv:
             if '/' in note:
-                scale_list.append(math.log2(float(note))*1200) # numbers expressed as ratios need to be converted into cents first
+                scale_list.append(math.log2(float(Fraction(note)))*1200) # numbers expressed as ratios need to be converted into cents first
         else:
             scale_list.append(float(note))
 
-    return root_note, scale_list
+    return scale_list
 
 def make_exp_scale_list(scale, note_num):
     """
