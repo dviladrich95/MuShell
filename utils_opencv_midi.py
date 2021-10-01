@@ -62,6 +62,22 @@ def show_boxes(img_thresh, box_list, color=(0, 255, 0)):
     cv.waitKey(0)
     return img_thresh_rgb
 
+def qshow_boxes(img_thresh, qbox_list, color=(0, 255, 0)):
+    """
+    Show a plot with boxes around each dot
+    :param img_thresh:
+    :param boxes:
+    :return:
+    """
+    img_thresh_rgb = cv.cvtColor(img_thresh.copy(), cv.COLOR_GRAY2RGB)
+    for box in qbox_list:
+        top_left = (int(box[0]), int(box[1]))
+        bottom_right = (int(box[0] + box[2]), int(box[1] + box[3]))
+        cv.rectangle(img_thresh_rgb, top_left, bottom_right, color, -1)
+
+    cv.imshow("Connected Components", img_thresh_rgb)
+    cv.waitKey(0)
+    return img_thresh_rgb
 
 def quantize_image(img_thresh, box_list, qbox_list):
     """
@@ -113,8 +129,9 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
     """
     qbox_list = np.zeros(box_list.shape)
 
-    img_width = img_shape[0]
-    img_height = img_shape[1]
+
+    img_height = img_shape[0]
+    img_width = img_shape[1]
 
     qexp_scale_list=[round(note/100) for note in exp_scale_list]
 
@@ -132,7 +149,7 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
     note_list = [int(qexp_scale_list[i]) for i in note_ind_list]
     qbox_list[:, 0] = note_list
 
-    # quantize the
+    # quantize the y (time) axis
     quant_param = img_height / beat_num
     qtime_list = (box_list[:, 1] / quant_param).astype(int)
     #qtime_list = qtime_list_boxnum * int(quant_param)

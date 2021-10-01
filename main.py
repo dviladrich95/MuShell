@@ -8,7 +8,7 @@ import os
 from midiutil import MIDIFile
 # import pandas as pd
 
-from utils_opencv_midi import count_objects, show_boxes, quantize_image, get_boxes, quantize_box, contour2fourier
+from utils_opencv_midi import count_objects, show_boxes, qshow_boxes, quantize_image, get_boxes, quantize_box, contour2fourier
 from utils_scale import get_scale_cents_and_root, make_exp_scale_list, qbox_list2midi
 
 
@@ -18,11 +18,11 @@ if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
 
-    file_name = "nussatella_thresh_p3"
+    file_name = "nussatella_thresh_p1_3noten"
     scale_file_name = 'a_minor_natural_equal_temperament'
 
-    note_num= 12 # number of pitch subdivisions
-    beat_num = 22 # number of time subdivisions in beats
+    note_num= 40 # number of pitch subdivisions
+    beat_num = 5 # number of time subdivisions in beats
     midi_str = file_name + '_' + scale_file_name + '_' + str(note_num) + '_' + str(beat_num) + '.mid'
     root_note = 74 #midi number corresponding to where to start. 74 starts at c5
 
@@ -49,11 +49,11 @@ if __name__ == '__main__':
 
     qbox_list2midi(qbox_list,root_note, exp_scale_list, midi_str)
 
-    #img_boxes = show_boxes(img_thresh, box_list)
-    #img_qboxes = show_boxes(img_thresh, qbox_list, color=(255, 0, 0))
+    img_boxes = show_boxes(img_thresh, box_list)
+    img_qboxes = qshow_boxes(img_thresh, qbox_list, color=(255, 0, 0))
 
-    #cv.imshow("Quantized box differences", img_boxes+img_qboxes)
-    #cv.waitKey(0)
+    cv.imshow("Quantized box differences", img_boxes+img_qboxes)
+    cv.waitKey(0)
 
     # label_count, label_image = count_objects(img_thresh)
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
