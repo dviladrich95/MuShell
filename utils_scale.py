@@ -33,24 +33,15 @@ def get_scale_cents_and_root(scale_name, root_note):
 
         if root_note == None:
             root_note = float(scale_str_list[2].split(' ')[-2][:-2]) #take only the Hz value at the end and remove the Hz symbol
-        scale_list = [float(x) for x in scale_list_dirty if x]
 
+        scale_list=[]
+        for note in scale_list_dirty:
+            if '/' in note:
+                scale_list.append(math.log2(float(note))*1200) # numbers expressed as ratios need to be converted into cents first
+        else:
+            scale_list.append(float(note))
 
     return root_note, scale_list
-
-
-def cents2frequency(cent_list,root_note):
-    """
-    Converts each list of notes in cents into frequency given root node
-    :param cent_list: list of notes in cents
-    :param root_note: root node that will indicate the frequency of the first note with 0 cents
-    :return: list of notes in frequency (Hz)
-    """
-    freq_list = []
-    for note in cent_list:
-        freq_list.append(root_note*math.pow(2, note/1200.0))
-    return freq_list
-
 
 def make_exp_scale_list(scale, note_num):
     """
