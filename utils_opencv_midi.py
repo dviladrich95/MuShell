@@ -122,7 +122,7 @@ def get_boxes(contours):
     return box_list
 
 
-def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_pixel_units=False):
+def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_pixel_units=False,forced_duration=0):
     """
     Quantizes the time coordinate (y coordinate) of the picture
     :param box_list:
@@ -173,6 +173,8 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
 
     duration_mean = np.concatenate(means, axis=0)
     qbox_list[:, 2] = duration_mean[:, 2]
+    if forced_duration:
+        qbox_list[:, 2] = int(forced_duration)
 
     if return_pixel_units:
         qbox_list[:, 0] = note_list
