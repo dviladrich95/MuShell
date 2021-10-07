@@ -18,13 +18,13 @@ if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
 
-    file_name = "conus_textile_lightbox_thresh_strip_grid_slim_better"
-    scale_file_name = 'a_minor_natural_equal_temperament'
+    file_name = "conus_textile_lightbox_thresh_strip_dots"
+    scale_file_name = 'balafon_1'
 
-    note_num= 12 # number of pitch subdivisions
-    beat_num = 400 # number of time subdivisions in beats
+    note_num= 60 # number of pitch subdivisions
+    beat_num = 180 # number of time subdivisions in beats
     midi_str = file_name + '_' + scale_file_name + '_' + str(note_num) + '_' + str(beat_num) + '.mid'
-    root_note = 74 #midi number corresponding to where to start. 74 starts at c5
+    root_note = 0 #midi number corresponding to where to start. 74 starts at c5
     forced_duration = 1
 
     img_thresh_rgb = cv.imread(os.path.join('Images',file_name+'.png'), 0)
