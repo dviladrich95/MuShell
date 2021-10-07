@@ -37,8 +37,8 @@ def get_scale_cents_and_root(scale_name):
         for note in scale_list_noconv:
             if '/' in note:
                 scale_list.append(math.log2(float(Fraction(note)))*1200) # numbers expressed as ratios need to be converted into cents first
-        else:
-            scale_list.append(float(note))
+            else:
+                scale_list.append(float(note))
 
     return scale_list
 

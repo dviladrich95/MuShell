@@ -18,13 +18,13 @@ if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
 
-    file_name = "nussatella_thresh_p1_3noten"
+    file_name = "conus_textile_lightbox_thresh_strip_grid_1"
     scale_file_name = 'ionic'
 
-    note_num= 12 # number of pitch subdivisions
-    beat_num = 40 # number of time subdivisions in beats
+    note_num= 60 # number of pitch subdivisions
+    beat_num = 180 # number of time subdivisions in beats
     midi_str = file_name + '_' + scale_file_name + '_' + str(note_num) + '_' + str(beat_num) + '.mid'
-    root_note = 74 #midi number corresponding to where to start. 74 starts at c5
+    root_note = 0 #midi number corresponding to where to start. 74 starts at c5
 
     img_thresh_rgb = cv.imread(os.path.join('Images',file_name+'.png'), 0)
     img_thresh = cv.threshold(img_thresh_rgb, 127, 255, cv.THRESH_BINARY)[1]
@@ -44,16 +44,16 @@ if __name__ == '__main__':
 
     exp_scale_list = make_exp_scale_list(scale, note_num)
 
-    qbox_list = quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num)
+    qbox_list, qparam_list = quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num)
 
 
     qbox_list2midi(qbox_list,root_note, exp_scale_list, midi_str)
 
-    #img_boxes = show_boxes(img_thresh, box_list)
-    #img_qboxes = qshow_boxes(img_thresh, qbox_list, color=(255, 0, 0))
+    img_boxes = show_boxes(img_thresh, box_list)
+    img_qboxes = qshow_boxes(img_thresh, qbox_list, qparam_list, color=(255, 0, 0))
 
-    #cv.imshow("Quantized box differences", img_boxes+img_qboxes)
-    #cv.waitKey(0)
+    cv.imshow("Quantized box differences", img_boxes+img_qboxes)
+    cv.waitKey(0)
 
     # label_count, label_image = count_objects(img_thresh)
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
