@@ -173,8 +173,10 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
 
     duration_mean = np.concatenate(means, axis=0)
     qbox_list[:, 2] = duration_mean[:, 2]
-    if forced_duration:
-        qbox_list[:, 2] = int(forced_duration)
+
+    #if forced_duration:
+        #qbox_list[:, 2] = int(forced_duration)
+
 
     if return_pixel_units:
         qbox_list[:, 0] = note_list

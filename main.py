@@ -18,8 +18,8 @@ if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
 
-    file_name = "conus_textile_lightbox_thresh_strip_grid_slim_better"
-    scale_file_name = 'a_minor_natural_equal_temperament'
+    file_name = "conus_textile_lightbox_thresh_strip_dots"
+    scale_file_name = 'balafon_1'
 
     note_num= 12 # number of pitch subdivisions
     beat_num = 400 # number of time subdivisions in beats
@@ -47,8 +47,7 @@ if __name__ == '__main__':
 
     qbox_list, qparam_list = quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,forced_duration=forced_duration)
 
-
-    qbox_list2midi(qbox_list,root_note, exp_scale_list, midi_str)
+    qbox_list2midi(qbox_list,root_note, exp_scale_list, midi_str, forced_duration=forced_duration)
 
     img_boxes = show_boxes(img_thresh, box_list)
     img_qboxes = qshow_boxes(img_thresh, qbox_list, qparam_list, color=(255, 0, 0))
