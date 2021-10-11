@@ -12,8 +12,6 @@ from utils_opencv_midi import count_objects, show_boxes, qshow_boxes, quantize_i
 from utils_scale import get_scale_cents_and_root, make_exp_scale_list, qbox_list2midi
 
 
-
-
 if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
