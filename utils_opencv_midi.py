@@ -72,7 +72,7 @@ def qshow_boxes(img_thresh, qbox_list,qparam_list, color=(0, 255, 0)):
     img_thresh_rgb = cv.cvtColor(img_thresh.copy(), cv.COLOR_GRAY2RGB)
     qp=qparam_list[0]
     qt=qparam_list[1]
-    qbox_list_px = np.asarray([qbox_list[:,0]*qp,qbox_list[:,1]*qt,qbox_list[:,2]*qt,qbox_list[:,3]]).transpose()
+    qbox_list_px = np.asarray([qbox_list[:,0]*qp,qbox_list[:,1]*qt,qbox_list[:,2]*qp,qbox_list[:,3]*qt]).transpose()
     for box in qbox_list_px:
         top_left = (int(box[0]), int(box[1]))
         bottom_right = (int(box[0] + box[2]), int(box[1] + box[3]))
@@ -183,8 +183,13 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
     qbox_list = qbox_list.astype(int)
 
     qparam_list = [pitch_norm_param,quant_param]
+    qbox_list2 = box_list
+    qbox_list2[:0] = qbox_list[:0]
+    qbox_list2[:1] = qbox_list[:1]
+    qbox_list2[:2] = box_list[:2]/pitch_norm_param
+    qbox_list2[:3] = box_list[:3]/quant_param
 
-    return qbox_list, qparam_list
+    return qbox_list, qbox_list2, qparam_list
 
 
 def contour2fourier(contours, n=100000,interpoints=100):

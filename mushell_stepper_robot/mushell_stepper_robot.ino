@@ -1,45 +1,71 @@
-//Written By Nikodem Bartnik - nikodembartnik.pl
-#define STEPPER_PIN_1 8
-#define STEPPER_PIN_2 9
-#define STEPPER_PIN_3 10
-#define STEPPER_PIN_4 11
-int step_number = 0;
-int num_steps = 85;
+#include <TinyStepper_28BYJ_48.h>
+#include <EasyNeoPixels.h>
 
-// Umrechunng Gradzahl in Steps
-// int num_steps = (grad_zahl / 360) * 2048;
-// num_stepsf += 0.5;
-// int num_steps = (int)num_stepsf;
+float myTime;
+float time_switch_list[] = {0.0,0.0,0.0,
+                          0.0,0.0,0.0,
+                          0.0,0.0,0.0,
+                          0.0,0.0,0.0};
+int note_counter_beg=0;
+int note_counter_end=0;
+int bps = 440/60;
+int qtime_list[]
+{
+1,1,5,7,7,8,11,12,13,16,19,19,20,21,24,24,26,28,30,32,33,34,35,36,36,39,39,40,42,44,44,44,46,48,49,49,52,52,54,56,57,58,60,61,63,64,64,64,67,67,68,69,72,72,73,74,75,75,77,79,80,83,84,85,85,85,86,88,89,89,90,91,93,94,94,97,98,100,100,100,101,103,104,105,106,109,110,110,111,115,117,117,117,121,121,123,125,127,128,129,131,132,133,134,135,139,143,145,147,148,149,151,152,152,156,159,159,160,161,161,161,165,165,165,167,169,170,173,177,177,181,183,183,185,185,186,186,194,196,197,198,199,202,204,205,208,209,214,214,214,215,218,218,218,218,220,223,224,225,227,227,230,231,231,231,234,234,234,234,237,240,242,245,247,249,249,253,254,254,254,258,259,262,262,264,266,267,271,272,273,274,278,280,280,285,286,288,290,294,294,296,299,301,302,307,307,310,313,315,317,320,323,323,327,327,328,330,330,331,331,331,331,332,335,336,336,339,340,341,342,343,344,345,346,346,348,348,349,354,354,354,354,357,359,363,367,370,371,373,373,373,374,375,376,377,378,380,380,381,382,385,385,387,387,389,389,389,395,395,396
+};
+int qtime_num=(sizeof(qtime_list) / sizeof(qtime_list[0]));
+int last_time_p1=qtime_list[qtime_num-1]+1;
+int qpitch_list[]
+{
+2,2,3,0,2,5,3,5,3,3,2,3,0,2,5,0,5,5,0,3,2,0,5,3,3,0,3,2,5,3,2,2,5,3,0,3,3,0,0,3,2,0,0,2,5,3,3,5,0,5,3,3,0,5,2,5,3,3,2,3,2,3,3,2,2,2,5,5,2,0,5,5,3,2,5,5,3,2,3,5,2,2,5,2,3,2,2,2,3,2,2,5,3,3,2,5,3,5,7,3,5,2,7,3,2,3,2,5,3,5,7,3,3,7,3,5,5,3,3,5,7,3,3,5,7,3,3,7,3,5,5,5,7,3,5,5,7,3,7,5,3,7,5,7,5,5,3,3,7,8,5,3,8,7,7,5,5,3,5,7,5,8,7,5,5,7,8,8,5,5,7,5,5,7,5,8,5,8,5,8,5,5,7,5,5,7,5,8,5,7,8,8,7,8,8,5,8,5,7,10,7,10,8,8,8,7,7,7,8,10,10,8,10,5,7,8,10,7,8,10,8,10,8,8,7,8,7,10,8,7,10,7,10,7,8,8,10,8,7,7,8,10,7,7,8,8,10,7,7,10,10,10,8,10,8,10,8,10,10,7,10,8,7,10,7,8,10,10,12,8
+};
+int qpitch_num=(sizeof(qpitch_list) / sizeof(qpitch_list[0]));
 
+int rb_r[]{255,255,255,128,0  ,0  ,0  ,0  ,0  ,128,255,255};
+int rb_g[]{0  ,0  ,0  ,0  ,0  ,128,255,255,255,255,255,128};
+int rb_b[]{0  ,128,255,255,255,255,255,128,0  ,0  ,0  ,0  };
+
+int duration = 1000;
+
+TinyStepper_28BYJ_48 stepper;
 
 void setup() {
-  pinMode(STEPPER_PIN_1, OUTPUT);
-  pinMode(STEPPER_PIN_2, OUTPUT);
-  pinMode(STEPPER_PIN_3, OUTPUT);
-  pinMode(STEPPER_PIN_4, OUTPUT);
+  Serial.begin(9600);
+
+  stepper.connectToPins(8, 9, 10, 11);
+  stepper.setSpeedInStepsPerSecond(256);
+  stepper.setAccelerationInStepsPerSecondPerSecond(512);
+
+    // setup for 12 NeoPixel attached to pin 2
+  setupEasyNeoPixels(2, 12);
 
 }
 
 void loop() {
-  Step(num_steps);
-  delay(3000);
-  digitalWrite(12, HIGH);
-  delay(250);
-  digitalWrite(12, LOW);
-  delay(250);
-
-}
-void Step(int num_steps){
-  for(int i=0; i<num_steps; i++){
-  digitalWrite(STEPPER_PIN_1, step_number==0);
-  digitalWrite(STEPPER_PIN_2, step_number==1);
-  digitalWrite(STEPPER_PIN_3, step_number==2);
-  digitalWrite(STEPPER_PIN_4, step_number==3);
   
-  step_number++;
-  if(step_number > 3){
-    step_number = 0;
+  float myTime = millis();
+  while (qtime_list[note_counter_end]<int(bps*myTime/1000)%last_time_p1){
+  note_counter_end += 1;
+  }
+
+  for (int i=note_counter_beg; i<note_counter_end; i++){
+    int pitch_led = constrain(qpitch_list[i],0,11);
+    writeEasyNeoPixel(pitch_led, rb_r[pitch_led]/10,rb_g[pitch_led]/10,rb_b[pitch_led]/10);
+    time_switch_list[pitch_led] = myTime;
     }
-  delay(2);
-}
+
+
+    for (int i=0; i<12; i++){
+      if(myTime-time_switch_list[i]>duration/bps){
+        writeEasyNeoPixel(i, LOW);
+      }
+    }
+    note_counter_beg = note_counter_end;
+  
+  stepper.moveRelativeInSteps(8);
+  if(note_counter_beg>=qtime_num-2){
+    note_counter_beg=0;
+    note_counter_end=0;
+    }
+
 }
