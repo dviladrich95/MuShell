@@ -56,7 +56,7 @@ def make_exp_scale_list(scale, note_num):
     return exp_scale_list
 
 
-def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str):
+def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str,forced_duration=0):
     """
     Converts each list of box parameters into MIDI format (note, duration, loudness) using the MIDIutil module
     """
@@ -81,4 +81,16 @@ def qbox_list2midi(qbox_list,root_note,exp_scale_list,midi_str):
 
     # Write to disk
     with open(output_file, "wb") as out_file:
-        midi_file.writeFile(out_file)
+        try:
+            midi_file.writeFile(out_file)
+
+        except IndexError:
+            qbox_list[:, 2] = int(forced_duration)
+
+            for note, time, duration, _ in qbox_list:
+                midi_file.addNote(track, channel, note + root_note, time, duration, volume)
+
+            with open(output_file, "wb") as out_file:
+                midi_file.writeFile(out_file)
+
+

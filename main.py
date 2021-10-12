@@ -18,11 +18,11 @@ if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
 
-    file_name = 'arenatus_thresh_strip_bend'
-    scale_file_name = 'a_minor_natural_equal_temperament'
+    file_name = "nussatella_thresh_colored_2"
+    scale_file_name = 'arabic_rast_on_c'
 
     note_num= 8 # number of pitch subdivisions
-    beat_num = 400 # number of time subdivisions in beats
+    beat_num = 120 # number of time subdivisions in beats
     midi_str = file_name + '_' + scale_file_name + '_' + str(note_num) + '_' + str(beat_num) + '.mid'
     csv_str = file_name + '_' + scale_file_name + '_' + str(note_num) + '_' + str(beat_num)
     root_note = 69 #midi number corresponding to where to start. 74 starts at c5, A4 at 69
@@ -55,14 +55,14 @@ if __name__ == '__main__':
     np.flip(qbox_list[:, 0]).tofile(output_file+'_0'+'.csv',sep=',')
     np.flip(qbox_list[:, 1]).tofile(output_file+'_1'+'.csv',sep=',')
 
-
-    qbox_list2midi(qbox_list,root_note, exp_scale_list, midi_str)
+    qbox_list2midi(qbox_list,root_note, exp_scale_list, midi_str, forced_duration=forced_duration)
 
     img_boxes = show_boxes(img_thresh, box_list)
     img_qboxes = qshow_boxes(img_thresh, qbox_list2, qparam_list, color=(255, 0, 0))
 
     cv.imshow("Quantized box differences", img_boxes+img_qboxes)
     cv.waitKey(0)
+    #cv.imwrite('Images\\boxes', img_boxes+img_qboxes)
 
     # label_count, label_image = count_objects(img_thresh)
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)

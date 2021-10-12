@@ -59,6 +59,7 @@ def show_boxes(img_thresh, box_list, color=(0, 255, 0)):
         cv.rectangle(img_thresh_rgb, top_left, bottom_right, color, -1)
 
     cv.imshow("Connected Components", img_thresh_rgb)
+    #cv.imwrite(r'Images\boxes\img_boxes.png', img_thresh_rgb)
     cv.waitKey(0)
     return img_thresh_rgb
 
@@ -79,7 +80,9 @@ def qshow_boxes(img_thresh, qbox_list,qparam_list, color=(0, 255, 0)):
         cv.rectangle(img_thresh_rgb, top_left, bottom_right, color, -1)
 
     cv.imshow("Connected Components", img_thresh_rgb)
+    #cv.imwrite(r'Images\boxes\img_boxes_new.png', img_thresh_rgb)
     cv.waitKey(0)
+
     return img_thresh_rgb
 
 def quantize_image(img_thresh, box_list, qbox_list):
@@ -173,8 +176,10 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
 
     duration_mean = np.concatenate(means, axis=0)
     qbox_list[:, 2] = duration_mean[:, 2]
-    if forced_duration:
-        qbox_list[:, 2] = int(forced_duration)
+
+    #if forced_duration:
+        #qbox_list[:, 2] = int(forced_duration)
+
 
     if return_pixel_units:
         qbox_list[:, 0] = note_list
