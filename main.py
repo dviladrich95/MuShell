@@ -16,11 +16,11 @@ if __name__ == '__main__':
     # img=cv.imread("img.png")
     # img_thresh=threshold_test(img)
 
-    file_name = "conus_textile_lightbox_thresh_strip_dots"
-    scale_file_name = 'balafon_1'
+    file_name = "nussatella_thresh_colored_2"
+    scale_file_name = 'arabic_rast_on_c'
 
-    note_num= 12 # number of pitch subdivisions
-    beat_num = 400 # number of time subdivisions in beats
+    note_num= 8 # number of pitch subdivisions
+    beat_num = 120 # number of time subdivisions in beats
     midi_str = file_name + '_' + scale_file_name + '_' + str(note_num) + '_' + str(beat_num) + '.mid'
     root_note = 74 #midi number corresponding to where to start. 74 starts at c5
     forced_duration = 1
@@ -52,6 +52,7 @@ if __name__ == '__main__':
 
     cv.imshow("Quantized box differences", img_boxes+img_qboxes)
     cv.waitKey(0)
+    #cv.imwrite('Images\\boxes', img_boxes+img_qboxes)
 
     # label_count, label_image = count_objects(img_thresh)
     # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
