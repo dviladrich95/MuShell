@@ -45,7 +45,7 @@ def count_objects(img_thresh):
 
     return label_count, label_image
 
-def show_boxes(img_thresh, box_list, color=(0, 255, 0)):
+def show_boxes(img_thresh, box_list, color=(255, 0, 0)):
     """
     Show a plot with boxes around each dot
     :param img_thresh:
@@ -63,18 +63,18 @@ def show_boxes(img_thresh, box_list, color=(0, 255, 0)):
     cv.waitKey(0)
     return img_thresh_rgb
 
-def qshow_boxes(img_thresh, qbox_list,qparam_list, color=(0, 255, 0)):
+def qshow_boxes(img_thresh, qbox_list,qparam_list, color=(255, 0, 0)):
     """
     Show a plot with boxes around each dot
     :param img_thresh:
     :param boxes:
     :return:
     """
-    img_thresh_rgb = cv.cvtColor(img_thresh.copy(), cv.COLOR_GRAY2RGB)
+    black_img = np.zeros(img_thresh.shape, np.uint8)
+    img_thresh_rgb = cv.cvtColor(black_img, cv.COLOR_GRAY2RGB)
     qp=qparam_list[0]
     qt=qparam_list[1]
-    qbox_list_px = np.asarray([qbox_list[:,0]*qp,qbox_list[:,1]*qt,qbox_list[:,2]*qp,qbox_list[:,3]*qt]).transpose()
-    for box in qbox_list_px:
+    for box in qbox_list:
         top_left = (int(box[0]), int(box[1]))
         bottom_right = (int(box[0] + box[2]), int(box[1] + box[3]))
         cv.rectangle(img_thresh_rgb, top_left, bottom_right, color, -1)
@@ -189,10 +189,8 @@ def quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,return_
 
     qparam_list = [pitch_norm_param,quant_param]
     qbox_list2 = box_list
-    qbox_list2[:0] = qbox_list[:0]
-    qbox_list2[:1] = qbox_list[:1]
-    qbox_list2[:2] = box_list[:2]/pitch_norm_param
-    qbox_list2[:3] = box_list[:3]/quant_param
+    qbox_list2[:,0] = qbox_list[:,0]*pitch_norm_param
+    qbox_list2[:,1] = qbox_list[:,1]*quant_param
 
     return qbox_list, qbox_list2, qparam_list
 
