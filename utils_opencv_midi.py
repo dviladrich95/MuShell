@@ -6,6 +6,75 @@ from scipy.fft import fft
 import math
 import os
 from midiutil import MIDIFile
+from utils_scale import get_scale_cents_and_root, make_exp_scale_list, qbox_list2midi
+
+def setup(file_name,scale_file_name,note_num = 8,
+          beat_num = 400,root_note = 69, forced_duration = 1):
+
+    # img=cv.imread("img.png")
+    # img_thresh=threshold_test(img)
+
+    file_name = file_name
+    scale_file_name = scale_file_name
+
+    note_num = note_num # number of pitch subdivisions
+    beat_num = beat_num # number of time subdivisions in beats
+    root_note = root_note #midi number corresponding to where to start. 74 starts at c5, A4 at 69
+    forced_duration = forced_duration
+    bpm = 120
+    midi_str = file_name + '_' + scale_file_name + '_' + str(note_num) + '_' + str(beat_num) + '.mid'
+    csv_str = file_name + '_' + scale_file_name + '_' + str(note_num) + '_' + str(beat_num)
+
+
+    img_thresh_rgb = cv.imread(os.path.join('Images',file_name+'.png'), 0)
+    img_thresh_rgb_flipped = np.flipud(img_thresh_rgb)
+    img_thresh = cv.threshold(img_thresh_rgb_flipped, 127, 255, cv.THRESH_BINARY)[1]
+    img_shape = img_thresh.shape
+
+    # print("Number of foreground objects", label_count)
+    # cv.imshow("Connected Components", label_image)
+    # cv.waitKey(0)
+
+    contours, _ = cv.findContours(img_thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+    box_list = get_boxes(contours)
+    # note_movie(img_thresh, box_list, beat_num, bpm, forced_duration, frame_rate=1)
+
+    img_boxes = show_boxes(img_thresh, box_list)
+    #img_output_file = os.path.join(os.getcwd(),'Images','boxes','boxes_'+ midi_str + '.png')
+    #cv.imwrite(img_output_file, np.flipud(img_boxes))
+
+    scale = get_scale_cents_and_root(scale_file_name+'.scl')
+
+    exp_scale_list = make_exp_scale_list(scale, note_num)
+
+    qbox_list, qbox_list2, qparam_list = quantize_box(box_list, img_shape, exp_scale_list, note_num, beat_num,forced_duration=forced_duration)
+
+    import pandas as pd
+    output_file = os.path.join(os.getcwd(), 'midi_files', csv_str)
+    #pd.DataFrame(qbox_list[:,0]).to_csv(output_file+'_0'+'.csv', header=None, index=None)
+    #pd.DataFrame(qbox_list[:,1]).to_csv(output_file+'_1'+'.csv', header=None, index=None)
+    np.flip(qbox_list[:, 0]).tofile(output_file+'_0'+'.csv',sep=',')
+    np.flip(qbox_list[:, 1]).tofile(output_file+'_1'+'.csv',sep=',')
+
+    qbox_list2midi(qbox_list,root_note, exp_scale_list, midi_str, forced_duration=forced_duration)
+
+
+    img_qboxes = qshow_boxes(img_thresh, qbox_list2, qparam_list)
+
+    qimg_output_file = os.path.join(os.getcwd(),'Images','boxes','q_boxes_'+ midi_str + '.png')
+    cv.imwrite(qimg_output_file,np.flipud(img_qboxes))
+
+    cv.imshow("Quantized box differences", img_boxes+img_qboxes)
+    cv.waitKey(0)
+    qimg_both_output_file = os.path.join(os.getcwd(),'Images','boxes','q_both_boxes_'+ midi_str + '.png')
+    cv.imwrite(qimg_both_output_file, np.flipud(img_boxes+img_qboxes))
+
+    # label_count, label_image = count_objects(img_thresh)
+    # label_count, label_image = quantize_image(img_thresh,box_list,qbox_list)
+
+    # box_params=get_boxes(img)
+    # midi_sequence=midi_convert(box_params)
 
 def threshold_test(img):
     """
@@ -45,6 +114,23 @@ def count_objects(img_thresh):
 
     return label_count, label_image
 
+def note_movie(img_thresh,box_list,beat_num,bpm,duration,frame_rate=1):
+    """
+    writes frames to disk highlighting played notes at each moment
+    :param img_thresh: thresholded image
+    :return:
+    """
+    fpbeat = 60.0 / bpm * frame_rate
+    frame_num = int(beat_num*fpbeat)
+    for frame_i in range(frame_num):
+        frame = np.zeros(img_thresh.shape)
+        for box in box_list:
+            frame_box_diff = abs(frame_i/(60.0/bpm*frame_rate)-box[1])
+            if abs(frame_i/fpbeat-box[1]) < duration:
+                frame[int(box[1]):int(box[1] + box[3]),int(box[0]):int(box[0] + box[2])] = img_thresh[ int(box[1]):int(box[1] + box[3]),int(box[0]):int(box[0] + box[2])]
+        cv.imwrite("frame{}.png".format(frame_i),frame)
+    return
+
 def show_boxes(img_thresh, box_list, color=(255, 0, 0)):
     """
     Show a plot with boxes around each dot
@@ -57,13 +143,9 @@ def show_boxes(img_thresh, box_list, color=(255, 0, 0)):
         top_left = (int(box[0]), int(box[1]))
         bottom_right = (int(box[0] + box[2]), int(box[1] + box[3]))
         cv.rectangle(img_thresh_rgb, top_left, bottom_right, color, -1)
-
-    cv.imshow("Connected Components", img_thresh_rgb)
-    #cv.imwrite(r'Images\boxes\img_boxes.png', img_thresh_rgb)
-    cv.waitKey(0)
     return img_thresh_rgb
 
-def qshow_boxes(img_thresh, qbox_list,qparam_list, color=(255, 0, 0)):
+def qshow_boxes(img_thresh, qbox_list,qparam_list, color=(0, 255, 0)):
     """
     Show a plot with boxes around each dot
     :param img_thresh:
@@ -78,11 +160,6 @@ def qshow_boxes(img_thresh, qbox_list,qparam_list, color=(255, 0, 0)):
         top_left = (int(box[0]), int(box[1]))
         bottom_right = (int(box[0] + box[2]), int(box[1] + box[3]))
         cv.rectangle(img_thresh_rgb, top_left, bottom_right, color, -1)
-
-    cv.imshow("Connected Components", img_thresh_rgb)
-    #cv.imwrite(r'Images\boxes\img_boxes_new.png', img_thresh_rgb)
-    cv.waitKey(0)
-
     return img_thresh_rgb
 
 def quantize_image(img_thresh, box_list, qbox_list):
