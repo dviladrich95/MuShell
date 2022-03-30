@@ -3,6 +3,7 @@ communication project touching on areas ranging from music theory, photogrammetr
 and computer science and with the aim of obtaining sound patterns from thresholded dot patterns
 found on the shell of a diverse range of cone snails species.
 
+
 An in-depth description of the project can be found here:
 
 
